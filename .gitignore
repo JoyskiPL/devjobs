@@ -45,3 +45,15 @@ next-env.d.ts
 node_modules/
 .next/
 .DS_Store
+
+# Uploaded CV files
+/uploads/cv/
+
+# Uploaded files
+/uploads/
+.DS_Store
+
+# AI agent skills
+/.agents/
+/.claude/
+/.windsurf/

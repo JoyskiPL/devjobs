@@ -2,8 +2,11 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function RegisterPage() {
+  const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -32,10 +35,7 @@ export default function RegisterPage() {
         return;
       }
 
-      setMessage("Konto utworzone! Możesz teraz przejść do logowania.");
-      setName("");
-      setEmail("");
-      setPassword("");
+  router.push("/login?registered=true");
     } catch {
       setMessage("Nie udało się połączyć z serwerem.");
     } finally {
@@ -128,9 +128,9 @@ export default function RegisterPage() {
 
         <p className="text-center text-sm text-zinc-400">
           Masz już konto?{" "}
-          <a href="/api/auth/signin" className="text-blue-400 hover:underline">
-            Zaloguj się
-          </a>
+          <Link href="/api/auth/signin" className="text-blue-400 hover:underline">
+          Zaloguj się
+          </Link>
         </p>
       </form>
     </main>

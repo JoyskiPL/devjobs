@@ -43,12 +43,12 @@ export async function POST(request: Request) {
         name,
         email: normalizedEmail,
         password: hashedPassword,
-        role: "CANDIDATE",
+        role: "EMPLOYER",
       },
     });
 
     return NextResponse.json(
-      { message: "Konto zostało utworzone." },
+      { message: "Konto pracodawcy zostało utworzone." },
       { status: 201 },
     );
   } catch {

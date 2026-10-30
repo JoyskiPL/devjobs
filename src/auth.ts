@@ -7,10 +7,45 @@ import bcrypt from "bcryptjs";
 import { z } from "zod";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  adapter: PrismaAdapter(prisma),
-  session: {
-    strategy: "jwt",
+  pages: {
+    signIn: "/login",
   },
+  adapter: PrismaAdapter(prisma),
+
+session: {
+  strategy: "jwt",
+},
+
+callbacks: {
+  async jwt({ token, user }) {
+    if (user) {
+      token.sub = user.id;
+      token.role = user.role;
+    }
+
+    return token;
+  },
+
+  async session({ session, token }) {
+    if (session.user) {
+      if (token.sub) {
+        session.user.id = token.sub;
+      }
+
+      if (
+        token.role === "CANDIDATE" ||
+        token.role === "EMPLOYER" ||
+        token.role === "ADMIN"
+      ) {
+        session.user.role = token.role;
+      }
+    }
+
+    return session;
+  },
+},
+
+
   providers: [
     Credentials({
       credentials: {
