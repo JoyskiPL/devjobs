@@ -1,15 +1,23 @@
 
+import Link from "next/link";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect, notFound } from "next/navigation";
 import { updateJob } from "./actions";
 import DeleteJobButton from "./delete-job-button";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 type EditJobPageProps = {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ error?: string }>;
 };
 
-export default async function EditJobPage({ params }: EditJobPageProps) {
+export default async function EditJobPage({
+  params,
+  searchParams,
+}: EditJobPageProps) {
   const session = await auth();
 
   if (!session?.user?.id) {
@@ -21,6 +29,7 @@ export default async function EditJobPage({ params }: EditJobPageProps) {
   }
 
   const { id } = await params;
+  const { error } = await searchParams;
   const jobId = Number(id);
 
   if (!Number.isInteger(jobId) || jobId <= 0) {
@@ -32,6 +41,13 @@ export default async function EditJobPage({ params }: EditJobPageProps) {
       id: jobId,
       employerId: session.user.id,
     },
+    include: {
+      _count: {
+        select: {
+          applications: true,
+        },
+      },
+    },
   });
 
   if (!job) {
@@ -41,95 +57,117 @@ export default async function EditJobPage({ params }: EditJobPageProps) {
   return (
     <main className="min-h-screen bg-zinc-950 px-6 py-12 text-white">
       <div className="mx-auto max-w-2xl">
-        <h1 className="text-3xl font-bold">Edytuj ofertę pracy</h1>
+        <div className="mb-8">
+          <Link
+            href="/employer"
+            className="text-sm text-zinc-400 transition hover:text-white"
+          >
+            ← Powrót do panelu
+          </Link>
 
-        <p className="mt-3 text-zinc-400">
-          Zmień dane oferty i zapisz swoje poprawki.
-        </p>
+          <h1 className="mt-5 text-3xl font-bold tracking-tight">
+            Edytuj ofertę pracy
+          </h1>
 
-        <form action={updateJob} className="mt-8 space-y-5">
+          <p className="mt-3 text-zinc-400">
+            Zmień dane oferty i zapisz swoje poprawki.
+          </p>
+        </div>
+
+        {error === "no-changes" && (
+          <div className="mb-5 rounded-xl border border-red-500/30 bg-red-500/10 p-4">
+            <div className="flex items-center gap-2">
+              <span className="text-red-400">⚠</span>
+              <p className="font-semibold text-red-400">
+                Nie wprowadzono żadnych zmian
+              </p>
+            </div>
+
+            <p className="mt-2 text-sm text-zinc-300">
+              Zmień przynajmniej jedno pole oferty, aby ponownie wysłać ją do moderacji.
+            </p>
+          </div>
+        )}
+
+        <form
+          action={updateJob}
+          className="space-y-6 rounded-xl border border-zinc-800 bg-zinc-900/50 p-6"
+        >
           <input type="hidden" name="id" value={job.id} />
 
-          <div>
-            <label htmlFor="title" className="mb-2 block text-sm font-medium">
-              Stanowisko
-            </label>
-            <input
+          <div className="space-y-2">
+            <Label htmlFor="title">Stanowisko</Label>
+            <Input
               id="title"
               name="title"
               type="text"
               defaultValue={job.title}
               required
-              className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-3 text-white outline-none focus:border-blue-500"
+              className="border-zinc-700 bg-zinc-950 text-white"
             />
           </div>
 
-          <div>
-            <label htmlFor="company" className="mb-2 block text-sm font-medium">
-              Firma
-            </label>
-            <input
+          <div className="space-y-2">
+            <Label htmlFor="company">Firma</Label>
+            <Input
               id="company"
               name="company"
               type="text"
               defaultValue={job.company}
               required
-              className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-3 text-white outline-none focus:border-blue-500"
+              className="border-zinc-700 bg-zinc-950 text-white"
             />
           </div>
 
-          <div>
-            <label htmlFor="location" className="mb-2 block text-sm font-medium">
-              Lokalizacja
-            </label>
-            <input
+          <div className="space-y-2">
+            <Label htmlFor="location">Lokalizacja</Label>
+            <Input
               id="location"
               name="location"
               type="text"
               defaultValue={job.location}
               required
-              className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-3 text-white outline-none focus:border-blue-500"
+              className="border-zinc-700 bg-zinc-950 text-white"
             />
           </div>
 
-          <div>
-            <label
-              htmlFor="description"
-              className="mb-2 block text-sm font-medium"
-            >
-              Opis stanowiska
-            </label>
+          <div className="space-y-2">
+            <Label htmlFor="description">Opis stanowiska</Label>
             <textarea
               id="description"
               name="description"
               defaultValue={job.description}
               required
               rows={8}
-              className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-3 text-white outline-none focus:border-blue-500"
+              className="flex min-h-32 w-full rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-white shadow-xs outline-none transition-colors placeholder:text-zinc-500 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
             />
           </div>
 
-          
-<div className="flex flex-wrap gap-3">
-  <button
-    type="submit"
-    className="rounded-lg bg-blue-600 px-5 py-3 font-medium hover:bg-blue-500"
-  >
-    Zapisz zmiany
-  </button>
+          <div className="flex flex-col-reverse gap-3 sm:flex-row">
+            <Button type="submit">
+              Zapisz zmiany
+            </Button>
 
-  <a
-    href="/employer"
-    className="rounded-lg border border-zinc-700 px-5 py-3 font-medium hover:bg-zinc-800"
-  >
-    Anuluj
-  </a>
-</div>
-
+            <Button asChild variant="outline">
+              <Link href="/employer">Anuluj</Link>
+            </Button>
+          </div>
         </form>
 
-        <div className="mt-5 border-t border-zinc-800 pt-5">
-          <DeleteJobButton id={job.id} />
+        <div className="mt-6 rounded-xl border border-red-900/50 bg-zinc-900/50 p-6">
+          <h2 className="mb-3 text-lg font-semibold">
+            Strefa niebezpieczna
+          </h2>
+
+          <p className="mb-5 text-sm text-zinc-400">
+            {job._count.applications > 0
+              ? `Ta oferta ma ${job._count.applications} zgłoszeń. Nie można jej trwale usunąć. Możesz ją ukryć w panelu pracodawcy.`
+              : "Ta oferta nie ma żadnych zgłoszeń. Możesz ją trwale usunąć."}
+          </p>
+
+          {job._count.applications === 0 && (
+            <DeleteJobButton id={job.id} />
+          )}
         </div>
       </div>
     </main>

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { deleteJob } from "./actions";
@@ -10,7 +9,7 @@ export default function DeleteJobButton({ id }: { id: number }) {
       onSubmit={(event) => {
         if (
           !window.confirm(
-            "Czy na pewno chcesz usunąć tę ofertę? Tej operacji nie można cofnąć."
+            "Czy na pewno chcesz trwale usunąć tę ofertę? Można usunąć tylko oferty bez zgłoszeń."
           )
         ) {
           event.preventDefault();

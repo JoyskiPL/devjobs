@@ -18,6 +18,35 @@ enum ApplicationStatus {
   ACCEPTED
   REJECTED
 }
+enum JobModerationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum JobCategory {
+  IT
+  FINANCE
+  MARKETING
+  LOGISTICS
+  ADMINISTRATION
+  ENGINEERING
+  OTHER
+}
+
+enum EmploymentType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  MANDATE
+  INTERNSHIP
+}
+
+enum WorkMode {
+  REMOTE
+  HYBRID
+  OFFICE
+}
 
 model User {
   id            String        @id @default(cuid())
@@ -36,7 +65,9 @@ model User {
   applications  Application[]
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
-  
+  savedJobs SavedJob[]
+  notifications Notification[]
+
 }
 
 model Account {
@@ -74,15 +105,26 @@ model VerificationToken {
 }
 
 model Job {
-  id           Int           @id @default(autoincrement())
-  title        String
-  company      String
-  location     String
-  description  String
-  createdAt    DateTime      @default(now())
-  employerId   String?
-  employer     User?         @relation(fields: [employerId], references: [id], onDelete: SetNull)
-  applications Application[]
+  id             Int             @id @default(autoincrement())
+  title          String
+  company        String
+  location       String
+  category       JobCategory     @default(OTHER)
+  employmentType EmploymentType  @default(FULL_TIME)
+  workMode       WorkMode        @default(OFFICE)
+  description    String
+  salaryMin      Int?
+  salaryMax      Int?
+  salaryCurrency String?         @db.VarChar(3)
+  createdAt      DateTime        @default(now())
+  employerId     String?
+  employer       User?           @relation(fields: [employerId], references: [id], onDelete: SetNull)
+  applications   Application[]
+  savedBy        SavedJob[]
+  isActive Boolean @default(true)
+  moderationStatus JobModerationStatus @default(APPROVED)
+  moderationReason String? @db.Text
+  views Int @default(0)
 
   @@index([employerId])
 }
@@ -99,4 +141,29 @@ model Application {
 
   @@unique([candidateId, jobId])
   @@index([jobId])
+}
+
+model SavedJob {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  jobId     Int
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job  Job  @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, jobId])
+  @@index([jobId])
+}
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  title     String
+  message   String   @db.Text
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
 }

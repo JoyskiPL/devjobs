@@ -5,6 +5,9 @@ import Link from "next/link";
 import { signIn, getSession } from "next-auth/react";
 import { useState, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export default function EmployerLoginPage() {
   const router = useRouter();
@@ -41,7 +44,7 @@ export default function EmployerLoginPage() {
         return;
       }
 
-      router.push("/employer");
+      window.location.assign("/employer");
     } catch {
       setMessage("Wystąpił błąd podczas logowania.");
     } finally {
@@ -50,98 +53,93 @@ export default function EmployerLoginPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-zinc-950 px-4 py-10 text-white">
-      <form
-        onSubmit={handleSubmit}
-        className="w-full max-w-md space-y-5 rounded-2xl border border-zinc-800 bg-zinc-900 p-8"
-      >
-        <div>
-          <Link href="/" className="text-sm text-blue-400 hover:underline">
-            ← Powrót do strony głównej
+    <main className="flex min-h-screen items-center justify-center bg-background px-4 py-12 text-foreground">
+      <div className="w-full max-w-md space-y-6">
+        <div className="text-center">
+          <Link href="/" className="text-2xl font-bold tracking-tight">
+            Dev<span className="text-primary">Jobs</span>
           </Link>
-          <h1 className="mt-5 text-3xl font-bold">Panel pracodawcy</h1>
-          <p className="mt-2 text-sm text-zinc-400">
+          <h1 className="mt-8 text-3xl font-bold tracking-tight">
+            Panel pracodawcy
+          </h1>
+          <p className="mt-2 text-sm text-muted-foreground">
             Zaloguj się, aby zarządzać ofertami i rekrutacją.
           </p>
         </div>
 
-        {registered && (
-          <p className="rounded-lg border border-emerald-800 bg-emerald-950 p-3 text-sm text-emerald-300">
-            Konto pracodawcy zostało utworzone. Możesz się teraz zalogować.
-          </p>
-        )}
-
-        <div className="space-y-2">
-          <label htmlFor="email" className="block text-sm font-medium">
-            E-mail
-          </label>
-          <input
-            id="email"
-            type="email"
-            autoComplete="email"
-            required
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            className="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-4 py-3 outline-none focus:border-emerald-500"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <label htmlFor="password" className="block text-sm font-medium">
-            Hasło
-          </label>
-          <input
-            id="password"
-            type="password"
-            autoComplete="current-password"
-            required
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            className="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-4 py-3 outline-none focus:border-emerald-500"
-          />
-        </div>
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full rounded-lg bg-emerald-600 px-4 py-3 font-semibold transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-60"
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-5 rounded-xl border bg-card p-6 shadow-sm"
         >
-          {loading ? "Logowanie..." : "Zaloguj się jako pracodawca"}
-        </button>
+          {registered && (
+            <p className="rounded-lg border border-emerald-800 bg-emerald-950 p-3 text-sm text-emerald-300">
+              Konto pracodawcy zostało utworzone. Możesz się teraz zalogować.
+            </p>
+          )}
 
-        {message && (
-          <p role="alert" className="text-sm text-red-400">
-            {message}
+          <div className="space-y-2">
+            <Label htmlFor="email">Adres e-mail</Label>
+            <Input
+              id="email"
+              type="email"
+              autoComplete="email"
+              required
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              placeholder="jan@firma.pl"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="password">Hasło</Label>
+            <Input
+              id="password"
+              type="password"
+              autoComplete="current-password"
+              required
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              placeholder="Wpisz swoje hasło"
+            />
+          </div>
+
+          {message && (
+            <p role="alert" className="text-sm text-destructive">
+              {message}
+            </p>
+          )}
+
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? "Logowanie..." : "Zaloguj się jako pracodawca"}
+          </Button>
+
+          <p className="text-center text-sm text-muted-foreground">
+            Nie masz konta pracodawcy?{" "}
+            <Link
+              href="/employer/register"
+              className="font-medium text-primary hover:underline"
+            >
+              Zarejestruj się
+            </Link>
           </p>
-        )}
+        </form>
 
-        <p className="text-center text-sm text-zinc-400">
-          Nie masz konta pracodawcy?{" "}
-          <Link
-            href="/employer/register"
-            className="text-emerald-400 hover:underline"
-          >
-            Zarejestruj się
-          </Link>
-        </p>
-
-        <p className="text-center text-sm text-zinc-500">
-          Rekrutujesz pracowników?{" "}
-          <Link
-            href="/employer/login"
-            className="text-emerald-400 hover:underline"
-          >
-            Panel pracodawcy
-          </Link>
-        </p>
-
-        <p className="text-center text-sm text-zinc-500">
+        <p className="text-center text-sm text-muted-foreground">
           Szukasz pracy?{" "}
-          <Link href="/login" className="text-blue-400 hover:underline">
+          <Link href="/login" className="font-medium text-primary hover:underline">
             Logowanie kandydata
           </Link>
         </p>
-      </form>
+
+        <p className="text-center text-sm">
+          <Link
+            href="/"
+            className="text-muted-foreground hover:text-foreground"
+          >
+            ← Powrót do strony głównej
+          </Link>
+        </p>
+      </div>
     </main>
   );
 }

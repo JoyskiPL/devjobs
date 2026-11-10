@@ -4,6 +4,9 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { updateProfile } from "./actions";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 type ProfilePageProps = {
   searchParams: Promise<{
@@ -48,129 +51,137 @@ export default async function ProfilePage({
   }
 
   return (
-    <main className="min-h-screen bg-zinc-950 px-6 py-12 text-white">
+    <main className="min-h-screen bg-zinc-950 px-4 py-12 text-white sm:px-6">
       <div className="mx-auto max-w-3xl">
         <Link
           href="/jobs"
-          className="text-sm text-emerald-400 hover:text-emerald-300"
+          className="text-sm text-zinc-400 transition hover:text-white"
         >
           ← Powrót do ofert
         </Link>
 
-        <div className="mt-6 rounded-2xl border border-zinc-800 bg-zinc-900 p-8">
-          <h1 className="text-3xl font-bold">Mój profil</h1>
-          <p className="mt-2 text-zinc-400">
-            Zarządzaj swoimi danymi i informacjami o doświadczeniu.
+        <div className="mt-6">
+          <p className="text-sm font-medium text-blue-400">
+            DevJobs / Konto kandydata
           </p>
 
-          {params.saved === "1" && (
-            <p className="mt-6 rounded-lg border border-emerald-800 bg-emerald-950 p-3 text-emerald-300">
-              Profil został zapisany.
-            </p>
-          )}
+          <h1 className="mt-2 text-3xl font-bold tracking-tight">
+            Mój profil
+          </h1>
 
-          {params.error === "name" && (
-            <p className="mt-6 rounded-lg border border-red-800 bg-red-950 p-3 text-red-300">
-              Imię i nazwisko nie mogą być puste.
-            </p>
-          )}
+          <p className="mt-3 text-zinc-400">
+            Zarządzaj swoimi danymi i informacjami o doświadczeniu.
+          </p>
+        </div>
 
-          {params.error === "length" && (
-            <p className="mt-6 rounded-lg border border-red-800 bg-red-950 p-3 text-red-300">
-              Jedno z pól przekracza dozwoloną długość.
-            </p>
-          )}
-
-          <form action={updateProfile} className="mt-8 space-y-6">
-            <div>
-              <label htmlFor="name" className="mb-2 block text-sm font-medium">
-                Imię i nazwisko
-              </label>
-              <input
-                id="name"
-                name="name"
-                type="text"
-                required
-                maxLength={100}
-                defaultValue={user.name ?? ""}
-                className="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-4 py-3 outline-none focus:border-emerald-400"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="email" className="mb-2 block text-sm font-medium">
-                Adres e-mail
-              </label>
-              <input
-                id="email"
-                type="email"
-                disabled
-                value={user.email ?? ""}
-                className="w-full rounded-lg border border-zinc-800 bg-zinc-950 px-4 py-3 text-zinc-500"
-              />
-              <p className="mt-2 text-xs text-zinc-500">
-                Adres e-mail jest obecnie tylko do odczytu.
+        <div className="mt-8 space-y-6">
+          <section className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6 sm:p-8">
+            <div className="mb-6">
+              <h2 className="text-xl font-semibold">Dane osobowe</h2>
+              <p className="mt-1 text-sm text-zinc-400">
+                Uzupełnij informacje widoczne w Twoim profilu.
               </p>
             </div>
 
-            <div>
-              <label htmlFor="phone" className="mb-2 block text-sm font-medium">
-                Numer telefonu
-              </label>
-              <input
-                id="phone"
-                name="phone"
-                type="tel"
-                maxLength={30}
-                defaultValue={user.phone ?? ""}
-                placeholder="np. 500 600 700"
-                className="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-4 py-3 outline-none focus:border-emerald-400"
-              />
-            </div>
+            {params.saved === "1" && (
+              <p className="mb-6 rounded-lg border border-emerald-800 bg-emerald-950 p-3 text-sm text-emerald-300">
+                Profil został zapisany.
+              </p>
+            )}
 
+            {params.error === "name" && (
+              <p className="mb-6 rounded-lg border border-red-800 bg-red-950 p-3 text-sm text-red-300">
+                Imię i nazwisko nie mogą być puste.
+              </p>
+            )}
+
+            {params.error === "length" && (
+              <p className="mb-6 rounded-lg border border-red-800 bg-red-950 p-3 text-sm text-red-300">
+                Jedno z pól przekracza dozwoloną długość.
+              </p>
+            )}
+
+            <form action={updateProfile} className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="name">Imię i nazwisko</Label>
+                <Input
+                  id="name"
+                  name="name"
+                  type="text"
+                  required
+                  maxLength={100}
+                  defaultValue={user.name ?? ""}
+                  className="border-zinc-700 bg-zinc-950 text-white"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="email">Adres e-mail</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  disabled
+                  value={user.email ?? ""}
+                  className="border-zinc-800 bg-zinc-950 text-zinc-300"
+                />
+                <p className="text-xs text-zinc-500">
+                  Adres e-mail jest obecnie tylko do odczytu.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="phone">Numer telefonu</Label>
+                <Input
+                  id="phone"
+                  name="phone"
+                  type="tel"
+                  maxLength={30}
+                  defaultValue={user.phone ?? ""}
+                  placeholder="np. 500 600 700"
+                  className="border-zinc-700 bg-zinc-950 text-white"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="description">
+                  O mnie i moje doświadczenie
+                </Label>
+                <textarea
+                  id="description"
+                  name="description"
+                  rows={6}
+                  maxLength={3000}
+                  defaultValue={user.description ?? ""}
+                  placeholder="Opisz swoje umiejętności, doświadczenie i kierunek rozwoju..."
+                  className="flex min-h-32 w-full resize-y rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-white shadow-xs outline-none transition-colors placeholder:text-zinc-500 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                />
+                <p className="text-xs text-zinc-500">
+                  Maksymalnie 3000 znaków.
+                </p>
+              </div>
+
+              <Button type="submit">
+                Zapisz zmiany
+              </Button>
+            </form>
+          </section>
+
+          <section className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6 sm:p-8">
             <div>
-              <label
-                htmlFor="description"
-                className="mb-2 block text-sm font-medium"
-              >
-                O mnie i moje doświadczenie
-              </label>
-              <textarea
-                id="description"
-                name="description"
-                rows={6}
-                maxLength={3000}
-                defaultValue={user.description ?? ""}
-                placeholder="Opisz swoje umiejętności, doświadczenie i kierunek rozwoju..."
-                className="w-full resize-y rounded-lg border border-zinc-700 bg-zinc-950 px-4 py-3 outline-none focus:border-emerald-400"
-              />
-              <p className="mt-2 text-xs text-zinc-500">
-                Maksymalnie 3000 znaków.
+              <h2 className="text-xl font-semibold">Moje CV</h2>
+              <p className="mt-2 text-sm text-zinc-400">
+                Prześlij swoje CV w formacie PDF. Maksymalny rozmiar pliku to 5 MB.
               </p>
             </div>
-
-            <button
-              type="submit"
-              className="rounded-lg bg-emerald-500 px-6 py-3 font-semibold text-zinc-950 transition hover:bg-emerald-400"
-            >
-              Zapisz zmiany
-            </button>
-          </form>
-
-          <div className="mt-10 border-t border-zinc-800 pt-6">
-            <h2 className="text-xl font-semibold">Moje CV</h2>
-            <p className="mt-2 text-sm text-zinc-400">
-              Prześlij swoje CV w formacie PDF. Maksymalny rozmiar pliku to 5 MB.
-            </p>
 
             {params.cvUploaded === "1" && (
-              <p className="mt-4 rounded-lg border border-emerald-800 bg-emerald-950 p-3 text-emerald-300">
+              <p className="mt-5 rounded-lg border border-emerald-800 bg-emerald-950 p-3 text-sm text-emerald-300">
                 CV zostało przesłane pomyślnie.
               </p>
             )}
 
             {params.cvError && (
-              <p className="mt-4 rounded-lg border border-red-800 bg-red-950 p-3 text-red-300">
+              <p className="mt-5 rounded-lg border border-red-800 bg-red-950 p-3 text-sm text-red-300">
                 {params.cvError === "size"
                   ? "Plik jest za duży. Maksymalny rozmiar to 5 MB."
                   : params.cvError === "type"
@@ -180,9 +191,8 @@ export default async function ProfilePage({
             )}
 
             {user.cvUrl && (
-              <p className="mt-4 text-sm text-emerald-300">
-                <span className="mr-2">✓</span>
-                CV jest zapisane na Twoim profilu.
+              <p className="mt-5 rounded-lg border border-emerald-800/50 bg-emerald-950/30 p-3 text-sm text-emerald-300">
+                ✓ CV jest zapisane na Twoim profilu.
               </p>
             )}
 
@@ -190,38 +200,35 @@ export default async function ProfilePage({
               action="/api/profile/cv"
               method="POST"
               encType="multipart/form-data"
-              className="mt-5 space-y-4"
+              className="mt-6 space-y-4"
             >
-              <input
+              <Input
                 type="file"
                 name="cv"
                 accept=".pdf,application/pdf"
                 required
-                className="block w-full text-sm text-zinc-300 file:mr-4 file:rounded-lg file:border-0 file:bg-zinc-800 file:px-4 file:py-2 file:text-white hover:file:bg-zinc-700"
+                className="h-auto min-h-12 cursor-pointer border-zinc-700 bg-zinc-950 p-2 text-sm leading-8 text-zinc-300 file:mr-4 file:inline-flex file:h-8 file:items-center file:rounded-md file:border-0 file:bg-zinc-800 file:px-4 file:align-middle file:text-sm file:leading-normal file:text-white hover:file:bg-zinc-700"
               />
 
-              <button
-                type="submit"
-                formNoValidate
-                className="rounded-lg bg-emerald-500 px-5 py-3 font-semibold text-zinc-950 transition hover:bg-emerald-400"
-              >
+              <Button type="submit" formNoValidate>
                 Prześlij CV
-              </button>
+              </Button>
             </form>
-          </div>
+          </section>
 
-          <div className="mt-10 border-t border-zinc-800 pt-6">
+          <section className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6 sm:p-8">
             <h2 className="text-xl font-semibold">Moje aplikacje</h2>
+
             <p className="mt-2 text-sm text-zinc-400">
               Sprawdź oferty, na które już aplikowałeś.
             </p>
-            <Link
-              href="/my-applications"
-              className="mt-4 inline-block rounded-lg border border-zinc-700 px-4 py-2 transition hover:border-emerald-400"
-            >
-              Zobacz aplikacje →
-            </Link>
-          </div>
+
+            <Button asChild variant="outline" className="mt-5">
+              <Link href="/my-applications">
+                Zobacz aplikacje →
+              </Link>
+            </Button>
+          </section>
         </div>
       </div>
     </main>

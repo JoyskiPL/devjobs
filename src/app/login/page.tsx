@@ -5,11 +5,15 @@ import Link from "next/link";
 import { signIn, getSession } from "next-auth/react";
 import { useState, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const registered = searchParams.get("registered") === "true";
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
@@ -35,10 +39,12 @@ export default function LoginPage() {
       const session = await getSession();
 
       if (session?.user?.role === "EMPLOYER") {
-        router.push("/employer");
+        router.replace("/employer");
       } else {
-        router.push("/jobs");
+        router.replace("/jobs");
       }
+
+router.refresh();
     } catch {
       setMessage("Wystąpił błąd podczas logowania.");
     } finally {
@@ -47,75 +53,80 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-zinc-950 px-4 py-10 text-white">
-      <form
-        onSubmit={handleSubmit}
-        className="w-full max-w-md space-y-5 rounded-2xl border border-zinc-800 bg-zinc-900 p-8"
-      >
-        <div>
-          <h1 className="text-3xl font-bold">Witaj ponownie</h1>
-          <p className="mt-2 text-sm text-zinc-400">
+    <main className="flex min-h-screen items-center justify-center bg-background px-4 py-12 text-foreground">
+      <div className="w-full max-w-md">
+        <div className="mb-8 text-center">
+          <Link href="/" className="text-2xl font-bold tracking-tight">
+            Dev<span className="text-primary">Jobs</span>
+          </Link>
+          <h1 className="mt-8 text-3xl font-bold tracking-tight">
+            Witaj ponownie
+          </h1>
+          <p className="mt-2 text-sm text-muted-foreground">
             Zaloguj się do swojego konta DevJobs.
           </p>
         </div>
 
-        {registered && (
-          <p className="rounded-lg border border-green-800 bg-green-950 p-3 text-sm text-green-300">
-            Konto zostało utworzone pomyślnie! Możesz się teraz zalogować.
-          </p>
-        )}
-
-        <div className="space-y-2">
-          <label htmlFor="email" className="block text-sm font-medium">
-            E-mail
-          </label>
-          <input
-            id="email"
-            type="email"
-            autoComplete="email"
-            required
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            className="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-4 py-3 outline-none focus:border-blue-500"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <label htmlFor="password" className="block text-sm font-medium">
-            Hasło
-          </label>
-          <input
-            id="password"
-            type="password"
-            autoComplete="current-password"
-            required
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            className="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-4 py-3 outline-none focus:border-blue-500"
-          />
-        </div>
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full rounded-lg bg-blue-600 px-4 py-3 font-semibold transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-6 rounded-xl border bg-card p-6 shadow-sm sm:p-8"
         >
-          {loading ? "Logowanie..." : "Zaloguj się"}
-        </button>
+          {registered && (
+            <p className="rounded-lg border border-green-800/30 bg-green-500/10 p-3 text-sm text-green-700 dark:text-green-400">
+              Konto zostało utworzone pomyślnie! Możesz się teraz zalogować.
+            </p>
+          )}
 
-        {message && (
-          <p role="alert" className="text-sm text-red-400">
-            {message}
+          <div className="space-y-2">
+            <Label htmlFor="email">E-mail</Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="jan@example.com"
+              autoComplete="email"
+              required
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="password">Hasło</Label>
+            <Input
+              id="password"
+              type="password"
+              placeholder="Wpisz swoje hasło"
+              autoComplete="current-password"
+              required
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+            />
+          </div>
+
+          {message && (
+            <p
+              role="alert"
+              className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive"
+            >
+              {message}
+            </p>
+          )}
+
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? "Logowanie..." : "Zaloguj się"}
+          </Button>
+
+          <p className="text-center text-sm text-muted-foreground">
+            Nie masz jeszcze konta?{" "}
+            <Link
+              href="/register"
+              className="font-medium text-primary hover:underline"
+            >
+              Zarejestruj się
+            </Link>
           </p>
-        )}
-
-        <p className="text-center text-sm text-zinc-400">
-          Nie masz jeszcze konta?{" "}
-          <Link href="/register" className="text-blue-400 hover:underline">
-            Zarejestruj się
-          </Link>
-        </p>
-      </form>
+        </form>
+      </div>
     </main>
   );
 }

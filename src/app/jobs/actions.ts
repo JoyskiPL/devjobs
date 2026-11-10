@@ -24,11 +24,14 @@ export async function applyToJob(formData: FormData) {
 
   const job = await prisma.job.findUnique({
     where: { id: jobId },
-    select: { id: true },
+    select: {
+      id: true,
+      isActive: true,
+    },
   });
 
-  if (!job) {
-    throw new Error("Ta oferta pracy już nie istnieje.");
+  if (!job || !job.isActive) {
+    throw new Error("Ta oferta pracy jest niedostępna.");
   }
 
   try {
@@ -39,14 +42,14 @@ export async function applyToJob(formData: FormData) {
       },
     });
   } catch (error) {
-      if (
-        error &&
-        typeof error === "object" &&
-        "code" in error &&
-        error.code === "P2002"
-      ) {
-        redirect(`/jobs/${jobId}?error=already-applied`);
-      }
+    if (
+      error &&
+      typeof error === "object" &&
+      "code" in error &&
+      error.code === "P2002"
+    ) {
+      redirect(`/jobs/${jobId}?error=already-applied`);
+    }
 
     throw error;
   }

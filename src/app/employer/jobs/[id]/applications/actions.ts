@@ -42,6 +42,13 @@ export async function updateApplicationStatus(
     },
     select: {
       id: true,
+      candidateId: true,
+      status: true,
+      job: {
+        select: {
+          title: true,
+        },
+      },
     },
   });
 
@@ -49,14 +56,33 @@ export async function updateApplicationStatus(
     return { error: "Nie znaleziono zgłoszenia." };
   }
 
-  await prisma.application.update({
-    where: {
-      id: application.id,
-    },
-    data: {
-      status: status as ApplicationStatus,
-    },
-  });
+  const newStatus = status as ApplicationStatus;
+
+  if (application.status !== newStatus) {
+    await prisma.$transaction(async (tx) => {
+      await tx.application.update({
+        where: {
+          id: application.id,
+        },
+        data: {
+          status: newStatus,
+        },
+      });
+
+      if (newStatus === "ACCEPTED" || newStatus === "REJECTED") {
+        await tx.notification.create({
+          data: {
+            userId: application.candidateId,
+            title: "Zmiana statusu zgłoszenia",
+            message:
+              newStatus === "ACCEPTED"
+                ? `Twoje zgłoszenie na stanowisko ${application.job.title} zostało zaakceptowane.`
+                : `Twoje zgłoszenie na stanowisko ${application.job.title} zostało odrzucone.`,
+          },
+        });
+      }
+    });
+  }
 
   revalidatePath(`/employer/jobs/${jobId}/applications`);
   redirect(`/employer/jobs/${jobId}/applications`);
