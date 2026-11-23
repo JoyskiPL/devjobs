@@ -1,8 +1,8 @@
 
 import Link from "next/link";
-import { auth } from "@/auth";
+import { requireEmployer } from "@/lib/employer";
+import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { redirect, notFound } from "next/navigation";
 import { updateJob } from "./actions";
 import DeleteJobButton from "./delete-job-button";
 import { Button } from "@/components/ui/button";
@@ -18,15 +18,7 @@ export default async function EditJobPage({
   params,
   searchParams,
 }: EditJobPageProps) {
-  const session = await auth();
-
-  if (!session?.user?.id) {
-    redirect("/login");
-  }
-
-  if (session.user.role !== "EMPLOYER") {
-    redirect("/");
-  }
+  const user = await requireEmployer();
 
   const { id } = await params;
   const { error } = await searchParams;
@@ -39,7 +31,7 @@ export default async function EditJobPage({
   const job = await prisma.job.findFirst({
     where: {
       id: jobId,
-      employerId: session.user.id,
+      employerId: user.id,
     },
     include: {
       _count: {

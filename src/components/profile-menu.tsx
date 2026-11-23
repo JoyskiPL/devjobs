@@ -83,7 +83,13 @@ export default function ProfileMenu({ name, children }: ProfileMenuProps) {
         <div className="border-t border-zinc-800 pt-2">
           <button
             type="button"
-            onClick={() => signOut({ redirectTo: "/login" })}
+            onClick={async () => {
+              await signOut({ redirect: false });
+
+              const hostname = window.location.hostname;
+
+              window.location.assign("/login");
+            }}
             className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm font-medium text-red-400 transition hover:bg-red-500/10 hover:text-red-300"
           >
             <span>↪</span>

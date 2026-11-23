@@ -1,7 +1,7 @@
 
 "use server";
 
-import { auth } from "@/auth";
+import { requireEmployer } from "@/lib/employer";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import {
@@ -21,17 +21,17 @@ const allowedCurrencies = [
   "NOK",
   "DKK",
 ];
-
+function generateSlug(title: string) {
+  return title
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/ł/g, "l")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
 export async function createJob(formData: FormData) {
-  const session = await auth();
-
-  if (!session?.user?.id) {
-    redirect("/login");
-  }
-
-  if (session.user.role !== "EMPLOYER") {
-    redirect("/");
-  }
+  const user = await requireEmployer();
 
   const title = formData.get("title");
   const company = formData.get("company");
@@ -112,24 +112,31 @@ export async function createJob(formData: FormData) {
     salaryCurrency = salaryCurrencyValue;
   }
 
-  await prisma.job.create({
-    data: {
-      title: title.trim(),
-      company: company.trim(),
-      location: location.trim(),
-      description: description.trim(),
-      category: category as JobCategory,
-      employmentType: employmentType as EmploymentType,
-      workMode: workMode as WorkMode,
-      salaryMin,
-      salaryMax,
-      salaryCurrency,
-      employerId: session.user.id,
-      isActive: false,
-      moderationStatus: "PENDING",
-      moderationReason: null,
-    },
-  });
+  const job = await prisma.job.create({
+  data: {
+    title: title.trim(),
+    company: company.trim(),
+    location: location.trim(),
+    description: description.trim(),
+    category: category as JobCategory,
+    employmentType: employmentType as EmploymentType,
+    workMode: workMode as WorkMode,
+    salaryMin,
+    salaryMax,
+    salaryCurrency,
+    employerId: user.id,
+    isActive: false,
+    moderationStatus: "PENDING",
+    moderationReason: null,
+  },
+});
+
+await prisma.job.update({
+  where: { id: job.id },
+  data: {
+    slug: `${generateSlug(title)}-${job.id}`,
+  },
+});
 
   redirect("/employer");
 }

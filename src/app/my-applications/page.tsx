@@ -170,7 +170,7 @@ export default async function MyApplicationsPage() {
                     size="sm"
                     className="border-zinc-700 bg-zinc-950/50 text-zinc-200 hover:border-blue-500/50 hover:bg-blue-500/10 hover:text-blue-300"
                   >
-                    <Link href={`/jobs/${application.job.id}`}>
+                    <Link href={`/jobs/${application.job.slug ?? application.job.id}`}>
                       Zobacz ofertę →
                     </Link>
                   </Button>

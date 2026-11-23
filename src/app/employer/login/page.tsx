@@ -2,12 +2,13 @@
 "use client";
 
 import Link from "next/link";
-import { signIn, getSession } from "next-auth/react";
+import { signIn, signOut, getSession } from "next-auth/react";
 import { useState, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { hostname } from "os";
 
 export default function EmployerLoginPage() {
   const router = useRouter();
@@ -37,14 +38,19 @@ export default function EmployerLoginPage() {
 
       const session = await getSession();
 
-      if (session?.user?.role !== "EMPLOYER") {
-        setMessage(
-          "To konto nie jest kontem pracodawcy. Skorzystaj z logowania kandydata.",
-        );
-        return;
-      }
+if (session?.user?.role !== "EMPLOYER") {
+  await signOut({ redirect: false });
+  setMessage(
+    "To konto nie ma uprawnień pracodawcy. Zaloguj się na konto pracodawcy.",
+  );
+  return;
+}
 
-      window.location.assign("/employer");
+      router.replace("/");
+
+      router.replace("/");
+
+      router.refresh();
     } catch {
       setMessage("Wystąpił błąd podczas logowania.");
     } finally {

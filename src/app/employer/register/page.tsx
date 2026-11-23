@@ -38,7 +38,7 @@ export default function EmployerRegisterPage() {
         return;
       }
 
-      router.push("/employer/login?registered=true");
+      router.push("/login?registered=true");
     } catch {
       setMessage("Nie udało się połączyć z serwerem.");
     } finally {
@@ -127,7 +127,7 @@ export default function EmployerRegisterPage() {
           <p className="text-center text-sm text-muted-foreground">
             Masz już konto?{" "}
             <Link
-              href="/employer/login"
+              href="/login"
               className="font-medium text-primary hover:underline"
             >
               Zaloguj się

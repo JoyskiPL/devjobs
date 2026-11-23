@@ -1,21 +1,21 @@
 "use server";
 
-import { auth } from "@/auth";
-import { prisma } from "@/lib/prisma";
+import { requireEmployer } from "@/lib/employer";
 import { redirect } from "next/navigation";
+import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
+function generateSlug(title: string) {
+  return title
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/ł/g, "l")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
 export async function updateJob(formData: FormData) {
-  const session = await auth();
-
-  if (!session?.user?.id) {
-    redirect("/login");
-  }
-
-  if (session.user.role !== "EMPLOYER") {
-    redirect("/");
-  }
-
+  const user = await requireEmployer();
   const id = Number(formData.get("id"));
   const title = formData.get("title");
   const company = formData.get("company");
@@ -40,10 +40,11 @@ export async function updateJob(formData: FormData) {
   const job = await prisma.job.findFirst({
     where: {
       id,
-      employerId: session.user.id,
+      employerId: user.id
     },
     select: {
       id: true,
+      slug: true,
       title: true,
       company: true,
       location: true,
@@ -60,6 +61,7 @@ export async function updateJob(formData: FormData) {
   const updatedCompany = company.trim();
   const updatedLocation = location.trim();
   const updatedDescription = description.trim();
+  const updatedSlug = `${generateSlug(updatedTitle)}-${job.id}`;
 
   const hasChanges =
     job.title !== updatedTitle ||
@@ -70,13 +72,23 @@ export async function updateJob(formData: FormData) {
   if (job.moderationStatus === "REJECTED" && !hasChanges) {
   redirect(`/employer/jobs/${id}/edit?error=no-changes`);
 }
+if (job.slug && job.slug !== updatedSlug) {
+  await prisma.jobSlugHistory.create({
+    data: {
+      slug: job.slug,
+      jobId: job.id,
+    },
+  });
+}
 
   await prisma.job.update({
     where: {
       id: job.id,
     },
+
     data: {
       title: updatedTitle,
+      slug: updatedSlug,
       company: updatedCompany,
       location: updatedLocation,
       description: updatedDescription,
@@ -98,16 +110,7 @@ export async function updateJob(formData: FormData) {
 }
 
 export async function deleteJob(formData: FormData) {
-  const session = await auth();
-
-  if (!session?.user?.id) {
-    redirect("/login");
-  }
-
-  if (session.user.role !== "EMPLOYER") {
-    redirect("/");
-  }
-
+  const user = await requireEmployer();
   const id = Number(formData.get("id"));
 
   if (!Number.isInteger(id) || id <= 0) {
@@ -118,7 +121,7 @@ export async function deleteJob(formData: FormData) {
     const job = await tx.job.findFirst({
       where: {
         id,
-        employerId: session.user.id,
+        employerId: user.id,
       },
       select: {
         id: true,
@@ -155,15 +158,7 @@ export async function deleteJob(formData: FormData) {
   redirect("/employer");
 }
 export async function toggleJobVisibility(formData: FormData) {
-  const session = await auth();
-
-  if (!session?.user?.id) {
-    redirect("/login");
-  }
-
-  if (session.user.role !== "EMPLOYER") {
-    redirect("/");
-  }
+  const user = await requireEmployer();
 
   const id = Number(formData.get("id"));
 
@@ -174,7 +169,7 @@ export async function toggleJobVisibility(formData: FormData) {
   const job = await prisma.job.findFirst({
     where: {
       id,
-      employerId: session.user.id,
+      employerId: user.id,
     },
     select: {
       id: true,

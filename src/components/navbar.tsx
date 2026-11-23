@@ -1,23 +1,29 @@
 
 import Link from "next/link";
+import { headers } from "next/headers";
 import { auth } from "@/auth";
 import ProfileMenu from "@/components/profile-menu";
 import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/prisma";
 
 export default async function Navbar() {
-  const session = await auth();
-const user = session?.user;
+  const requestHeaders = await headers();
+  const hostname = requestHeaders.get("host")?.split(":")[0];
+  const isEmployerSubdomain =
+    hostname === "pracodawca.devjobs.localhost";
 
-const unreadNotificationsCount =
-  user?.role === "CANDIDATE"
-    ? await prisma.notification.count({
-        where: {
-          userId: user.id,
-          isRead: false,
-        },
-      })
-    : 0;
+  const session = await auth();
+  const user = session?.user;
+
+  const unreadNotificationsCount =
+    user?.role === "CANDIDATE"
+      ? await prisma.notification.count({
+          where: {
+            userId: user.id,
+            isRead: false,
+          },
+        })
+      : 0;
 
   return (
     <header className="sticky top-0 z-40 border-b border-zinc-800/80 bg-zinc-950/90 text-white backdrop-blur-xl">
@@ -58,17 +64,18 @@ const unreadNotificationsCount =
 
               <ProfileMenu name={user.name || "Moje konto"}>
                 <Link
-              href="/notifications"
-              className="flex items-center justify-between rounded-lg px-3 py-2 transition hover:bg-zinc-800"
-            >
-              <span>Powiadomienia</span>
+                  href="/notifications"
+                  className="flex items-center justify-between rounded-lg px-3 py-2 transition hover:bg-zinc-800"
+                >
+                  <span>Powiadomienia</span>
 
-              {unreadNotificationsCount > 0 && (
-                <span className="rounded-full bg-blue-500/15 px-2 py-0.5 text-xs font-semibold text-blue-400">
-                  {unreadNotificationsCount}
-                </span>
-              )}
-            </Link>
+                  {unreadNotificationsCount > 0 && (
+                    <span className="rounded-full bg-blue-500/15 px-2 py-0.5 text-xs font-semibold text-blue-400">
+                      {unreadNotificationsCount}
+                    </span>
+                  )}
+                </Link>
+
                 <Link
                   href="/profile"
                   className="block rounded-lg px-3 py-2 transition hover:bg-zinc-800"
@@ -115,12 +122,14 @@ const unreadNotificationsCount =
 
           {!user && (
             <>
-              <Link
-                href="/jobs"
-                className="hidden rounded-lg px-3 py-2 text-zinc-300 transition hover:bg-zinc-900 hover:text-emerald-400 sm:block"
-              >
-                Oferty pracy
-              </Link>
+              {!isEmployerSubdomain && (
+                <Link
+                  href="/jobs"
+                  className="hidden rounded-lg px-3 py-2 text-zinc-300 transition hover:bg-zinc-900 hover:text-emerald-400 sm:block"
+                >
+                  Oferty pracy
+                </Link>
+              )}
 
               <Link
                 href="/login"

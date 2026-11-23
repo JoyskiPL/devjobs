@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { applyToJob } from "../actions";
 import { toggleSavedJob } from "../saved-actions";
 import { Button } from "@/components/ui/button";
@@ -64,19 +64,48 @@ export default async function JobPage({
   const { error } = await searchParams;
   const jobId = Number(id);
 
-  if (!Number.isInteger(jobId) || jobId <= 0) {
-    notFound();
-  }
-
- const job = await prisma.job.findFirst({
+const job = await prisma.job.findFirst({
   where: {
-    id: jobId,
     isActive: true,
+    OR: [
+      { slug: id },
+      ...(Number.isInteger(jobId) && jobId > 0
+        ? [{ id: jobId }]
+        : []),
+    ],
+  },
+  include: {
+    employer: {
+      select: {
+        companyProfile: {
+          select: {
+            slug: true,
+          },
+        },
+      },
+    },
   },
 });
 
 if (!job) {
+  const oldSlug = await prisma.jobSlugHistory.findUnique({
+    where: {
+      slug: id,
+    },
+    include: {
+      job: true,
+    },
+  });
+
+  if (oldSlug?.job.isActive && oldSlug.job.slug) {
+    redirect(`/jobs/${oldSlug.job.slug}`);
+  }
+
   notFound();
+}
+
+if (job.slug && id !== job.slug) {
+  redirect(`/jobs/${job.slug}`);
 }
 
 await prisma.job.update({
@@ -134,7 +163,16 @@ await prisma.job.update({
             </h1>
 
             <div className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-zinc-400 sm:text-base">
+              {job.employer?.companyProfile?.slug ? (
+              <Link
+                href={`/firmy/${job.employer.companyProfile.slug}`}
+                className="font-medium text-white transition hover:text-blue-400"
+              >
+                {job.company}
+              </Link>
+            ) : (
               <span className="font-medium text-white">{job.company}</span>
+            )}
               <span className="text-zinc-600">·</span>
               <span>{job.location}</span>
             </div>

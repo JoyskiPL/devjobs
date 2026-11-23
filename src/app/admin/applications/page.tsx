@@ -107,6 +107,7 @@ export default async function AdminApplicationsPage({
           job: {
             select: {
               id: true,
+              slug: true,
               title: true,
               company: true,
               location: true,
@@ -218,7 +219,7 @@ export default async function AdminApplicationsPage({
                 </p>
 
                 <Link
-                  href={`/jobs/${application.job.id}`}
+                  href={`/jobs/${application.job.slug ?? application.job.id}`}
                   className="mt-2 inline-block font-medium text-blue-400 transition hover:text-blue-300"
                 >
                   {application.job.title}

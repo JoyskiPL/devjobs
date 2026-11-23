@@ -1,8 +1,8 @@
 
 import Link from "next/link";
-import { auth } from "@/auth";
+import { requireEmployer } from "@/lib/employer";
 import { prisma } from "@/lib/prisma";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import StatusForm from "./status-form";
 import ExportButton from "./export-button";
@@ -20,37 +20,28 @@ export default async function ApplicationsPage({
   params,
   searchParams,
 }: ApplicationsPageProps) {
-  const session = await auth();
-
-  if (!session?.user) {
-    redirect("/login");
-  }
-
-  if (session.user.role !== "EMPLOYER") {
-    redirect("/");
-  }
-
+  const user = await requireEmployer();
   const { id } = await params;
   const jobId = Number(id);
   const { from, to } = await searchParams;
- const validDate = (value?: string) => {
-  if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-    return null;
-  }
+  const validDate = (value?: string) => {
+    if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      return null;
+    }
 
-  const [year, month, day] = value.split("-").map(Number);
-  const date = new Date(year, month - 1, day);
+    const [year, month, day] = value.split("-").map(Number);
+    const date = new Date(year, month - 1, day);
 
-  if (
-    date.getFullYear() !== year ||
-    date.getMonth() !== month - 1 ||
-    date.getDate() !== day
-  ) {
-    return null;
-  }
+    if (
+      date.getFullYear() !== year ||
+      date.getMonth() !== month - 1 ||
+      date.getDate() !== day
+    ) {
+      return null;
+    }
 
-  return date;
-};
+    return date;
+  };
 
 const fromDate = validDate(from);
 const toDate = validDate(to);
@@ -77,7 +68,7 @@ const dateFilter =
   const job = await prisma.job.findFirst({
     where: {
       id: jobId,
-      employerId: session.user.id,
+      employerId: user.id,
     },
     include: {
       applications: {

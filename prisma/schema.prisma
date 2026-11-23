@@ -62,6 +62,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
   employerJobs  Job[]
+  companyProfile Company?
   applications  Application[]
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
@@ -106,6 +107,7 @@ model VerificationToken {
 
 model Job {
   id             Int             @id @default(autoincrement())
+  slug           String?         @unique
   title          String
   company        String
   location       String
@@ -127,6 +129,16 @@ model Job {
   views Int @default(0)
 
   @@index([employerId])
+  slugHistory JobSlugHistory[]
+}
+model JobSlugHistory {
+  id        Int      @id @default(autoincrement())
+  slug      String   @unique
+  jobId     Int
+  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([jobId])
 }
 
 model Application {
@@ -166,4 +178,18 @@ model Notification {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, isRead])
+}
+model Company {
+  id          Int      @id @default(autoincrement())
+  name        String
+  slug        String   @unique
+  description String?  @db.Text
+  logoUrl     String?
+  website     String?
+  nip         String?
+  location    String?
+  ownerId     String   @unique
+  owner       User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

@@ -1,7 +1,7 @@
 
 "use server";
 
-import { auth } from "@/auth";
+import { requireEmployer } from "@/lib/employer";
 import { prisma } from "@/lib/prisma";
 import { ApplicationStatus } from "@/generated/prisma/enums";
 import { redirect } from "next/navigation";
@@ -17,12 +17,7 @@ export async function updateApplicationStatus(
   _previousState: ActionState,
   formData: FormData
 ): Promise<ActionState> {
-  const session = await auth();
-
-  if (!session?.user?.id || session.user.role !== "EMPLOYER") {
-    return { error: "Brak uprawnień." };
-  }
-
+  const user = await requireEmployer();
   const status = formData.get("status");
 
   if (
@@ -37,7 +32,7 @@ export async function updateApplicationStatus(
       id: applicationId,
       jobId,
       job: {
-        employerId: session.user.id,
+        employerId: user.id,
       },
     },
     select: {

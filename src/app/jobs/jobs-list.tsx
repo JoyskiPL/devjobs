@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 
 type JobItem = {
   id: number;
+  slug: string | null;
   title: string;
   company: string;
   location: string;
@@ -442,7 +443,7 @@ export default function JobsList({
                       asChild
                       className="w-full bg-blue-600 text-white hover:bg-blue-500"
                     >
-                      <Link href={`/jobs/${job.id}`}>
+                      <Link href={`/jobs/${job.slug ?? job.id}`}>
                         Zobacz ofertę →
                       </Link>
                     </Button>

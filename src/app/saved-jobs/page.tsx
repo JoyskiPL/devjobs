@@ -93,7 +93,7 @@ export default async function SavedJobsPage() {
                 <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
                   <div className="min-w-0 flex-1">
                     <Link
-                      href={`/jobs/${savedJob.job.id}`}
+                      href={`/jobs/${savedJob.job.slug ?? savedJob.job.id}`}
                       className="text-lg font-semibold transition hover:text-blue-400 sm:text-xl"
                     >
                       {savedJob.job.title}
@@ -136,7 +136,7 @@ export default async function SavedJobsPage() {
 
                   <div className="flex shrink-0 flex-col gap-2 sm:w-44">
                     <Button asChild className="w-full">
-                      <Link href={`/jobs/${savedJob.job.id}`}>
+                      <Link href={`/jobs/${savedJob.job.slug ?? savedJob.job.id}`}>
                         Zobacz ofertę
                       </Link>
                     </Button>

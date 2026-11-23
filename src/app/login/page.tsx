@@ -2,7 +2,7 @@
 "use client";
 
 import Link from "next/link";
-import { signIn, getSession } from "next-auth/react";
+import { signIn, signOut, getSession } from "next-auth/react";
 import { useState, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const registered = searchParams.get("registered") === "true";
+  const unauthorized = searchParams.get("error") === "unauthorized";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -37,12 +38,25 @@ export default function LoginPage() {
       }
 
       const session = await getSession();
+        const hostname = window.location.hostname;
 
-      if (session?.user?.role === "EMPLOYER") {
-        router.replace("/employer");
-      } else {
-        router.replace("/jobs");
-      }
+        if (
+          hostname === "admin.devjobs.localhost" &&
+          session?.user?.role !== "ADMIN"
+        ) {
+          await signOut({ redirect: false });
+          setMessage(
+            "To konto nie ma uprawnień administratora. Zaloguj się na konto administratora.",
+          );
+          return;
+        }
+      if (session?.user?.role === "ADMIN") {
+  router.replace("/");
+} else if (session?.user?.role === "EMPLOYER") {
+  router.replace("/employer");
+} else {
+  router.replace("/jobs");
+}
 
 router.refresh();
     } catch {
@@ -76,7 +90,14 @@ router.refresh();
               Konto zostało utworzone pomyślnie! Możesz się teraz zalogować.
             </p>
           )}
-
+          {unauthorized && (
+            <p
+              role="alert"
+              className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive"
+            >
+              To konto nie ma uprawnień administratora. Zaloguj się na konto administratora.
+            </p>
+          )}
           <div className="space-y-2">
             <Label htmlFor="email">E-mail</Label>
             <Input

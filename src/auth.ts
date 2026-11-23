@@ -15,7 +15,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 session: {
   strategy: "jwt",
 },
-
+cookies: {
+  sessionToken: {
+    options: {
+      domain: process.env.AUTH_COOKIE_DOMAIN,
+    },
+  },
+},
 callbacks: {
   async jwt({ token, user }) {
     if (user) {

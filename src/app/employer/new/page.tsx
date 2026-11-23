@@ -1,24 +1,15 @@
-
 import Link from "next/link";
-import { auth } from "@/auth";
-import { redirect } from "next/navigation";
+import { requireEmployer } from "@/lib/employer";
 import { createJob } from "./actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export default async function NewJobPage() {
-  const session = await auth();
-
-  if (!session?.user) {
-    redirect("/login");
-  }
-
-  if (session.user.role !== "EMPLOYER") {
-    redirect("/");
-  }
+  await requireEmployer();
 
   return (
+
     <main className="min-h-screen bg-zinc-950 px-6 py-12 text-white">
       <div className="mx-auto max-w-2xl">
         <div className="mb-8">

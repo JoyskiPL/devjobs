@@ -1,26 +1,16 @@
 
 import Link from "next/link";
-import { auth } from "@/auth";
+import { requireEmployer } from "@/lib/employer";
 import { prisma } from "@/lib/prisma";
-import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import ToggleJobButton from "./toggle-job-button";
 import ExportAllApplicationsButton from "./export-all-applications-button";
 
 export default async function EmployerPage() {
-  const session = await auth();
-
-  if (!session?.user) {
-    redirect("/login");
-  }
-
-  if (session.user.role !== "EMPLOYER") {
-    redirect("/");
-  }
-
+  const user = await requireEmployer();
   const jobs = await prisma.job.findMany({
     where: {
-      employerId: session.user.id,
+      employerId: user.id,
     },
     orderBy: {
       createdAt: "desc",
@@ -41,7 +31,7 @@ export default async function EmployerPage() {
   const allApplications = await prisma.application.findMany({
     where: {
       job: {
-        employerId: session.user.id,
+        employerId: user.id,
       },
     },
     include: {
@@ -78,7 +68,7 @@ export default async function EmployerPage() {
     prisma.application.count({
       where: {
         job: {
-          employerId: session.user.id,
+          employerId: user.id,
         },
         status: "PENDING",
       },
@@ -86,7 +76,7 @@ export default async function EmployerPage() {
     prisma.application.count({
       where: {
         job: {
-          employerId: session.user.id,
+          employerId: user.id,
         },
         status: "ACCEPTED",
       },
@@ -94,7 +84,7 @@ export default async function EmployerPage() {
     prisma.application.count({
       where: {
         job: {
-          employerId: session.user.id,
+          employerId: user.id,
         },
         status: "REJECTED",
       },
@@ -123,7 +113,7 @@ export default async function EmployerPage() {
   const recentApplications = await prisma.application.findMany({
     where: {
       job: {
-        employerId: session.user.id,
+        employerId: user.id,
       },
       createdAt: {
         gte: sevenDaysAgo,
@@ -188,6 +178,11 @@ export default async function EmployerPage() {
           </div>
 
           <div className="flex flex-wrap gap-3">
+            <Button asChild variant="outline">
+            <Link href="/employer/company">
+              Profil firmy
+            </Link>
+          </Button>
           {allApplications.length > 0 && (
             <ExportAllApplicationsButton
               applications={exportApplications}

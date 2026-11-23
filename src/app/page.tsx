@@ -73,7 +73,7 @@ export default function Home() {
               variant="outline"
               className="h-12 border-zinc-700 bg-zinc-900/50 px-7 text-white hover:bg-zinc-800 hover:text-white"
             >
-              <Link href="/employer/login">
+              <Link href="http://pracodawca.devjobs.localhost:3000">
                 Jestem pracodawcą
               </Link>
             </Button>
@@ -157,13 +157,13 @@ export default function Home() {
                 asChild
                 className="bg-emerald-600 text-white hover:bg-emerald-500"
               >
-                <Link href="/employer/login">
+                <Link href="http://pracodawca.devjobs.localhost:3000">
                   Panel pracodawcy →
                 </Link>
               </Button>
 
               <Link
-                href="/employer/register"
+                href="http://pracodawca.devjobs.localhost:3000/register"
                 className="ml-4 text-sm text-zinc-400 transition hover:text-white"
               >
                 Rejestracja
