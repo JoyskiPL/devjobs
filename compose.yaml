@@ -7,7 +7,7 @@ services:
     environment:
       POSTGRES_DB: devjobs
       POSTGRES_USER: devjobs
-      POSTGRES_PASSWORD: devjobs_local_password
+      POSTGRES_PASSWORD: devjobs
     ports:
       - "5432:5432"
     volumes:
@@ -18,5 +18,23 @@ services:
       timeout: 5s
       retries: 5
 
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: devjobs-app
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://devjobs:devjobs@postgres:5432/devjobs?schema=public
+      AUTH_SECRET: ${AUTH_SECRET}
+      AUTH_COOKIE_DOMAIN: ${AUTH_COOKIE_DOMAIN}
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
 volumes:
   postgres_data:
+    name: devjobs_postgres_data
